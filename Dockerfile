@@ -1,4 +1,4 @@
-FROM python:3.8.0
+FROM python:3.9.5-slim
 
 RUN pip install -U pip wheel && pip install locust boto3 pyyaml
 
