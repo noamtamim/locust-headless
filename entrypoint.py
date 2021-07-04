@@ -45,6 +45,7 @@ def put_stats_in_db(csvfile, dyndb_table_out):
     with open(csvfile, 'rt') as f:
         for record in DictReader(f):
             if record.get('Name')[0] == '/':
+                record['Name'] = record['Name'][1:]
                 record['TestID'] = test_id
                 record['WorkerID'] = worker_id
                 table.put_item(
