@@ -9,12 +9,14 @@ import yaml
 import time
 from glob import iglob
 from uuid import uuid4
+from csv import DictReader
 
 from botocore.exceptions import ClientError
 
 start_time = int(time.time())
 s3 = boto3.client('s3')
 test_id = os.environ.get('TESTID')
+worker_id = str(uuid4())
 
 print(os.environ)
 
@@ -37,6 +39,19 @@ def download(src: str, dst: str):
         urllib.request.urlretrieve(src, dst)
 
 
+def put_stats_in_db(csvfile, dyndb_table_out):
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table(dyndb_table_out)
+    with open(csvfile, 'rt') as f:
+        for record in DictReader(f):
+            if record.get('Name')[0] == '/':
+                record['TestID'] = test_id
+                record['WorkerID'] = worker_id
+                table.put_item(
+                    Item=record
+                )
+
+
 os.chdir(os.path.dirname(__file__))
 
 download(argv[1], 'config.yaml')
@@ -54,11 +69,14 @@ test_start_time = time.time()
 os.system(cmd)
 test_end_time = time.time()
 
+if dyndb_table_out := config.get('dyndb_table_out'):
+    put_stats_in_db('locust_out_stats.csv', dyndb_table_out)
+
 if s3_out := config.get('s3_out'):
     parsed = urlparse(s3_out)
     prefix = parsed.path[1:]
 
-    s3_prefix = f"{prefix}/{test_id}/{uuid4()}/"
+    s3_prefix = f"{prefix}/{test_id}/{worker_id}/"
     print('Uploading csv files to', s3_prefix)
     for fn in iglob('locust_out_*.csv'):
         s3_upload(fn, parsed.netloc, s3_prefix + fn)
