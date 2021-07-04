@@ -15,7 +15,7 @@ from botocore.exceptions import ClientError
 
 start_time = int(time.time())
 s3 = boto3.client('s3')
-test_id = os.environ.get('TESTID')
+test_id = os.environ.get('TEST_ID')
 worker_id = str(uuid4())
 
 print(os.environ)
