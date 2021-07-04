@@ -39,13 +39,12 @@ def download(src: str, dst: str):
         urllib.request.urlretrieve(src, dst)
 
 
-def put_stats_in_db(csvfile, dyndb_table_out):
+def put_stats_in_db(csvfile, table_name):
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(dyndb_table_out)
+    table = dynamodb.Table(table_name)
     with open(csvfile, 'rt') as f:
         for record in DictReader(f):
-            if record.get('Name')[0] == '/':
-                record['Name'] = record['Name'][1:]
+            if record.get('Name') == 'Aggregated':
                 record['TestID'] = test_id
                 record['WorkerID'] = worker_id
                 table.put_item(
