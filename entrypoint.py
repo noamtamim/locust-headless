@@ -69,6 +69,8 @@ test_start_time = time.time()
 os.system(cmd)
 test_end_time = time.time()
 
+print(f'Load test complete in {int(test_end_time-test_start_time):,} seconds')
+
 if dyndb_table_out := config.get('dyndb_table_out'):
     put_stats_in_db('locust_out_stats.csv', dyndb_table_out)
 
@@ -82,4 +84,13 @@ if s3_out := config.get('s3_out'):
         s3_upload(fn, parsed.netloc, s3_prefix + fn)
     print('Done uploading csv files')
 
-print(f'Load test complete in {int(test_end_time-test_start_time):,} seconds')
+
+print()
+print('========== Stats ==========')
+print(open('locust_out_stats.csv', 'rt', encoding='utf8').read())
+print()
+print('========== Failures ==========')
+print(open('locust_out_failures.csv', 'rt', encoding='utf8').read())
+print()
+
+print('Done')
