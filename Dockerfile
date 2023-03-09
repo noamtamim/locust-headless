@@ -1,4 +1,4 @@
-FROM python:3.9.12
+FROM python:3.12.0a5
 
 RUN pip install -U pip wheel && pip install locust boto3 pyyaml
 
